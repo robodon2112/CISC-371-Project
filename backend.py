@@ -49,7 +49,7 @@ def signup():
             return redirect(url_for('home'))
         except Exception as e:
             db.session.rollback()
-            flash(f"Sign-up failed: {e}")
+            flash(f"Sign-up failed: {e}", "danger")
             return redirect(url_for('signup'))
     else:
         return render_template('signup.html')
@@ -66,18 +66,41 @@ def login():
     # Check if user exists and password matches
     if user and check_password_hash(user.password, password):
         session['username'] = username  # Set session variable
-        return redirect(url_for('dashboard'))
+        session['role'] = user.role
+
+        # Redirect based on role
+        if user.role == 'Helpdesk':
+            return redirect(url_for('helpdesk_page'))
+        elif user.role == 'SupportStaff':
+            return redirect(url_for('support_staff_page'))
+        elif user.role == 'Administrator':
+            return redirect(url_for('administrator_page'))
+        elif user.role == 'Manager':
+            return redirect(url_for('manager_page'))
+        else:
+            flash("Unknown role. Please contact support.", "danger")
+            return redirect(url_for('home'))
+        
     else:
         flash("Invalid username or password")
         return redirect(url_for('home'))
 
 # Protected route for the dashboard
-@app.route('/dashboard')
-def dashboard():
-    # Check if the user is logged in
-    if 'username' in session:
-        return f"Welcome, {session['username']}! This is your dashboard."
-    return redirect(url_for('home'))
+@app.route('/helpdesk')
+def helpdesk_page():
+    return render_template('helpdesk.html')
+
+@app.route('/support_staff')
+def support_staff_page():
+    return render_template('support_staff.html')
+
+@app.route('/administrator')
+def administrator_page():
+    return render_template('administrator.html')
+
+@app.route('/manager')
+def manager_page():
+    return render_template('manager.html')
 
 # Route to handle user logout
 @app.route('/logout')
