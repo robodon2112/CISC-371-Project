@@ -8,43 +8,95 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manager Main Page</title>
     <style>
-        /* Center image */
-        .center-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh; /* Full-height to center vertically */
+        /* General Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 18px;
+            text-align: left;
         }
-        .center-container img {
-            max-width: 20%;
-            height: auto;
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Page Header Styles */
+        header {
+            padding: 20px;
+            background-color: #0073e6;
+            color: white;
+            text-align: left;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        header h2 {
+            margin: 5px 0 0;
+            font-size: 20px;
         }
     </style>
 </head>
 
 <body>
     <!-- Title -->
-    <header style="text-align: left;">
+    <header>
         <h1>Track-IT MasterHD</h1>
-        <h2>Manager Pagek</h2>
+        <h2>Help Desk Page</h2>
     </header>
 
-    <!-- Temp -->
-    <main>
-        <p> This will be the page for Managers to log into to acces open tickets that will be generated 
-            by other users that will all be loaded into the MySQL DB I set up and auto assigned a ticket number. 
-            This page will allow the MAnagers to see how many open tickets there are, who they are assigned to, etc. and
-            create thier own helpdesk tickets when needed 
-            <br>
-            <br>
-            We as a group can dicuss the nuances and features we would like to add to make the app function. 
-        </p>
-    </main>
-
-        <!-- Centered Image -->
-        <div class="center-container">
-            <img src="/Users/robertodonnell/Documents/CISC-371 Project/images/work_in_prog.jpg" alt="Work in Progress">
-        </div>
-
+    <!-- Ticket Table -->
+    <table>
+        <thead>
+            <tr>
+                <th>Ticket Number</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Title</th>
+                <th>Request User</th>
+                <th>Assigned To</th>
+                {% if role in ['Manager', 'Admin', 'Helpdesk'] %}
+                <th>Actions</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in tickets %}
+            <tr>
+                <td>{{ ticket.id }}</td>
+                <td>{{ ticket.status }}</td>
+                <td>{{ ticket.created_at.strftime('%Y-%m-%d') }}</td>
+                <td>{{ ticket.title }}</td>
+                <td>{{ ticket.created_by }}</td>
+                <td>{{ ticket.assigned_to or 'Unassigned' }}</td>
+                {% if role in ['Manager', 'Admin', 'Helpdesk'] %}
+                <td>
+                    {% if ticket.status == 'Opened' %}
+                    <form action="{{ url_for('close_ticket', ticket_id=ticket.id) }}" method="POST">
+                        <button type="submit">Close</button>
+                    </form>
+                    {% endif %}
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </body>
+
 </html>

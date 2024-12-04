@@ -86,17 +86,57 @@ def logout():
     flash("You have been logged out.")
     return redirect(url_for('home'))
 
-"""
-# Run the Flask application
-if __name__ == '__main__':
-    app.run(debug=True)
 
-@app.route('/test_db')
-def test_db():
-    try:
-        # Attempt to retrieve all users to see if the connection is successful
-        users = User.query.all()
-        return f"Users found: {len(users)}"
-    except Exception as e:
-        return f"Database connection error: {e}"
-"""
+# Ticket Creation / Ticket Closing
+
+
+class Ticket(db.Model):
+    id = db.Column(db.Integer, primary_key=True)  # Ticket Number
+    title = db.Column(db.String(100), nullable=False)  # Title
+    status = db.Column(db.String(20), default="Opened")  # Status: Opened/Closed
+    created_by = db.Column(db.String(50), nullable=False)  # Request User
+    assigned_to = db.Column(db.String(50), nullable=True)  # Assigned to (optional)
+    created_at = db.Column(db.DateTime, default=db.func.now())  # Date
+
+@app.route('/create_ticket', methods=['GET', 'POST'])
+def create_ticket():
+    if 'username' not in session:
+        flash("You must log in to create a ticket.")
+        return redirect(url_for('home'))
+
+    if request.method == 'POST':
+        title = request.form['title']
+        new_ticket = Ticket(
+            title=title,
+            created_by=session['username']
+        )
+        db.session.add(new_ticket)
+        db.session.commit()
+        flash("Ticket created successfully!")
+        return redirect(url_for('view_tickets'))
+    
+    return render_template('create_ticket.html')
+
+@app.route('/tickets')
+def view_tickets():
+    if 'username' not in session:
+        flash("You must log in to view tickets.")
+        return redirect(url_for('home'))
+
+    tickets = Ticket.query.all()  # Show all tickets
+    return render_template('tickets.html', tickets=tickets, role=session.get('role'))
+
+@app.route('/close_ticket/<int:ticket_id>', methods=['POST'])
+def close_ticket(ticket_id):
+    if 'username' not in session or session.get('role') not in ['Manager', 'Admin', 'Helpdesk']:
+        flash("You do not have permission to close tickets.")
+        return redirect(url_for('view_tickets'))
+
+    ticket = Ticket.query.get(ticket_id)
+    if ticket:
+        ticket.status = "Closed"
+        db.session.commit()
+        flash("Ticket closed successfully!")
+    else:
+        flash("Ticket not found.")
+    return redirect(url_for('view_tickets'))
