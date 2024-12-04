@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Support Staff Main Page</title>
+    <title>Support Dashboard</title>
     <style>
         /* General Table Styles */
         table {
@@ -57,8 +57,13 @@
     <!-- Title -->
     <header>
         <h1>Track-IT MasterHD</h1>
-        <h2>Help Desk Page</h2>
+        <h2>Support Dashboard </h2>
+        <h3>Support Page</h3>
+        <a href="{{ url_for('create_ticket') }}" style="float: right;">
+            <button>Create Ticket</button>
+        </a>
     </header>
+    
 
     <!-- Ticket Table -->
     <table>
@@ -78,6 +83,12 @@
         <tbody>
             {% for ticket in tickets %}
             <tr>
+                <!-- Ticket Number is a clickable link -->
+                <td>
+                    <a href="{{ url_for('view_ticket', ticket_id=ticket.id) }}">
+                        {{ ticket.id }}
+                    </a>
+                </td>
                 <td>{{ ticket.id }}</td>
                 <td>{{ ticket.status }}</td>
                 <td>{{ ticket.created_at.strftime('%Y-%m-%d') }}</td>

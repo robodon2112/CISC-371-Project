@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Ticket</title>
+</head>
+<body>
+    <h1>Ticket Details</h1>
+    <p><strong>Ticket Number:</strong> {{ ticket.id }}</p>
+    <p><strong>Status:</strong> {{ ticket.status }}</p>
+    <p><strong>Date Created:</strong> {{ ticket.created_at.strftime('%Y-%m-%d') }}</p>
+    <p><strong>Title:</strong> {{ ticket.title }}</p>
+    <p><strong>Description:</strong> {{ ticket.description }}</p>
+    <p><strong>Created By:</strong> {{ ticket.created_by }}</p>
+    <p><strong>Assigned To:</strong> {{ ticket.assigned_to or 'Unassigned' }}</p>
+
+    {% if role in ['Manager', 'Admin', 'Helpdesk'] and ticket.status == 'Opened' %}
+    <form method="POST" action="{{ url_for('view_ticket', ticket_id=ticket.id) }}">
+        <button type="submit">Close Ticket</button>
+    </form>
+    {% endif %}
+
+    <a href="{{ url_for('home') }}">Back to Home</a>
+</body>
+</html>

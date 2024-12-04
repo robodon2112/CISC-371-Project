@@ -121,33 +121,67 @@ class Ticket(db.Model):
     assigned_to = db.Column(db.String(50), nullable=True)  # Assigned to (optional)
     created_at = db.Column(db.DateTime, default=db.func.now())  # Date
 
+# Create Ticket Route
 @app.route('/create_ticket', methods=['GET', 'POST'])
 def create_ticket():
     if 'username' not in session:
-        flash("You must log in to create a ticket.")
+        flash("You must log in to create a ticket.", "danger")
         return redirect(url_for('home'))
 
     if request.method == 'POST':
         title = request.form['title']
+        description = request.form['description']  # Capture ticket details
+        created_by = session['username']  # Logged-in user
+
         new_ticket = Ticket(
             title=title,
-            created_by=session['username']
+            description=description,
+            created_by=created_by
         )
-        db.session.add(new_ticket)
-        db.session.commit()
-        flash("Ticket created successfully!")
-        return redirect(url_for('view_tickets'))
-    
-    return render_template('create_ticket.html')
+        try:
+            db.session.add(new_ticket)
+            db.session.commit()
+            flash("Ticket created successfully!", "success")
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Failed to create ticket: {e}", "danger")
 
-@app.route('/tickets')
-def view_tickets():
-    if 'username' not in session:
-        flash("You must log in to view tickets.")
+        # Redirect back to user's homepage
+        role = session.get('role')
+        if role == 'Helpdesk':
+            return redirect(url_for('helpdesk_page'))
+        elif role == 'SupportStaff':
+            return redirect(url_for('support_staff_page'))
+        elif role == 'Administrator':
+            return redirect(url_for('administrator_page'))
+        elif role == 'Manager':
+            return redirect(url_for('manager_page'))
         return redirect(url_for('home'))
 
-    tickets = Ticket.query.all()  # Show all tickets
-    return render_template('tickets.html', tickets=tickets, role=session.get('role'))
+    return render_template('createticket.html')
+
+# View Ticket Route
+@app.route('/view_ticket/<int:ticket_id>', methods=['GET', 'POST'])
+def view_ticket(ticket_id):
+    if 'username' not in session:
+        flash("You must log in to view tickets.", "danger")
+        return redirect(url_for('home'))
+
+    ticket = Ticket.query.get(ticket_id)
+    if not ticket:
+        flash("Ticket not found.", "danger")
+        return redirect(url_for('home'))
+
+    # Handle ticket closure
+    if request.method == 'POST' and session.get('role') in ['Manager', 'Admin', 'Helpdesk']:
+        ticket.status = "Closed"
+        db.session.commit()
+        flash(f"Ticket {ticket.id} closed successfully!", "success")
+        return redirect(url_for('view_ticket', ticket_id=ticket_id))
+
+    return render_template('viewticket.html', ticket=ticket, role=session.get('role'))
+
+# Close Ticket Route
 
 @app.route('/close_ticket/<int:ticket_id>', methods=['POST'])
 def close_ticket(ticket_id):
