@@ -6,7 +6,7 @@ app = Flask(__name__)
 app.secret_key = 'Gordon_Ramsey'  
 
 # Database Configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://robodonnell:Naruto2112@localhost/TrackitmasterDB'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///trackitmaster.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -86,6 +86,7 @@ def logout():
     flash("You have been logged out.")
     return redirect(url_for('home'))
 
+"""
 # Run the Flask application
 if __name__ == '__main__':
     app.run(debug=True)
@@ -98,3 +99,4 @@ def test_db():
         return f"Users found: {len(users)}"
     except Exception as e:
         return f"Database connection error: {e}"
+"""
