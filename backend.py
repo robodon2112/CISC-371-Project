@@ -114,12 +114,14 @@ def logout():
 
 
 class Ticket(db.Model):
-    id = db.Column(db.Integer, primary_key=True)  # Ticket Number
+    id = db.Column(db.Integer, primary_key=True)  # Ticket ID
     title = db.Column(db.String(100), nullable=False)  # Title
-    status = db.Column(db.String(20), default="Opened")  # Status: Opened/Closed
+    description = db.Column(db.Text, nullable=False)  # Description
+    status = db.Column(db.String(20), default="Opened")  # Status
     created_by = db.Column(db.String(50), nullable=False)  # Request User
-    assigned_to = db.Column(db.String(50), nullable=True)  # Assigned to (optional)
-    created_at = db.Column(db.DateTime, default=db.func.now())  # Date
+    assigned_to = db.Column(db.String(50), nullable=True)  # Assigned to
+    created_at = db.Column(db.DateTime, default=db.func.now())  # Timestamp
+
 
 # Create Ticket Route
 @app.route('/create_ticket', methods=['GET', 'POST'])
