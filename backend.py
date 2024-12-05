@@ -1,4 +1,3 @@
-import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -10,15 +9,15 @@ app.secret_key = 'Gordon_Ramsey'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://trackitmasterdb_user:TAyVBZ1PtMRe3I4VMsMf0k9XfVDs5TGI@dpg-ct8ek9u8ii6s73c9is60-a.oregon-postgres.render.com/trackitmasterdb'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-
 db = SQLAlchemy(app)
 
 # Initialize the database and create tables
 with app.app_context():
     db.create_all()
 
-# User model that maps to MySQL DB
+# User model that maps to POSTGRESQL 
 class User(db.Model):
+    __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
