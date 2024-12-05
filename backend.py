@@ -6,7 +6,7 @@ app = Flask(__name__)
 app.secret_key = 'Gordon_Ramsey'  
 
 # Database Configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///trackitmaster.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://trackitmasterdb_user:TAyVBZ1PtMRe3I4VMsMf0k9XfVDs5TGI@dpg-ct8ek9u8ii6s73c9is60-a:5432/trackitmasterdb'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -199,3 +199,8 @@ def close_ticket(ticket_id):
     else:
         flash("Ticket not found.")
     return redirect(url_for('view_tickets'))
+
+with app.app_context():
+    print("Creating tables...")
+    db.create_all()
+    print("Tables created successfully.")
