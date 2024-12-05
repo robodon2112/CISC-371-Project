@@ -73,7 +73,7 @@ def login():
         # Redirect based on role
         if user.role == 'Helpdesk':
             return redirect(url_for('helpdesk_page'))
-        elif user.role == 'SupportStaff':
+        elif user.role == 'Support Staff':
             return redirect(url_for('support_staff_page'))
         elif user.role == 'Administrator':
             return redirect(url_for('administrator_page'))

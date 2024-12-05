@@ -62,48 +62,44 @@
     </header>
 
     <!-- Ticket Table -->
-    <table>
-        <thead>
-            <tr>
-                <th>Ticket Number</th>
-                <th>Status</th>
-                <th>Date</th>
-                <th>Title</th>
-                <th>Request User</th>
-                <th>Assigned To</th>
-                {% if role in ['Manager', 'Admin', 'Helpdesk'] %}
-                <th>Actions</th>
+<table border="1" cellpadding="5" cellspacing="0">
+    <thead>
+        <tr>
+            <th>Ticket Number</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Title</th>
+            <th>Request User</th>
+            <th>Assigned To</th>
+            {% if role in ['Manager', 'Admin', 'Helpdesk'] %}
+            <th>Actions</th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for ticket in tickets %}
+        <tr>
+            <!-- Ticket Number is a clickable link -->
+            <td>
+                <a href="{{ url_for('view_ticket', ticket_id=ticket.id) }}">
+                    {{ ticket.id }}
+                </a>
+            </td>
+            <td>{{ ticket.status }}</td>
+            <td>{{ ticket.created_at.strftime('%Y-%m-%d') }}</td>
+            <td>{{ ticket.title }}</td>
+            <td>{{ ticket.created_by }}</td>
+            <td>{{ ticket.assigned_to or 'Unassigned' }}</td>
+            {% if role in ['Manager', 'Admin', 'Helpdesk'] %}
+            <td>
+                {% if ticket.status == 'Opened' %}
+                <form action="{{ url_for('close_ticket', ticket_id=ticket.id) }}" method="POST">
+                    <button type="submit">Close</button>
+                </form>
                 {% endif %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for ticket in tickets %}
-            <tr>
-                <!-- Ticket Number is a clickable link -->
-                <td>
-                    <a href="{{ url_for('view_ticket', ticket_id=ticket.id) }}">
-                        {{ ticket.id }}
-                    </a>
-                </td>
-                <td>{{ ticket.id }}</td>
-                <td>{{ ticket.status }}</td>
-                <td>{{ ticket.created_at.strftime('%Y-%m-%d') }}</td>
-                <td>{{ ticket.title }}</td>
-                <td>{{ ticket.created_by }}</td>
-                <td>{{ ticket.assigned_to or 'Unassigned' }}</td>
-                {% if role in ['Manager', 'Admin', 'Helpdesk'] %}
-                <td>
-                    {% if ticket.status == 'Opened' %}
-                    <form action="{{ url_for('close_ticket', ticket_id=ticket.id) }}" method="POST">
-                        <button type="submit">Close</button>
-                    </form>
-                    {% endif %}
-                </td>
-                {% endif %}
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</body>
-
-</html>
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
