@@ -1,3 +1,5 @@
+
+
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -61,13 +63,23 @@ def login():
     username = request.form['username']
     password = request.form['password']
 
-    # Query for the user by username
-    user = User.query.filter_by(username=username).first()
+    # Debugging: Print input values
+    print(f"Login attempt with username: {username}")
+
+    # Query for the user by username (case-insensitive)
+    user = User.query.filter(func.lower(User.username) == username.lower()).first()
+
+    # Debugging: Check if user exists
+    if user:
+        print(f"User found: {user.username}, Role: {user.role}")
+    else:
+        print("No user found with that username.")
 
     # Check if user exists and password matches
     if user and check_password_hash(user.password, password):
         session['username'] = username  # Set session variable
         session['role'] = user.role
+        print(f"Login successful. Session: {session}")
 
         # Redirect based on role
         if user.role == 'Helpdesk':
@@ -83,7 +95,8 @@ def login():
             return redirect(url_for('home'))
         
     else:
-        flash("Invalid username or password")
+        flash("Invalid username or password", "danger")
+        print("Login failed: Invalid username or password")
         return redirect(url_for('home'))
 
 # Protected route for the dashboard
