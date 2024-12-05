@@ -1,5 +1,3 @@
-
-
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -107,7 +105,7 @@ def helpdesk_page():
 
 @app.route('/support_staff')
 def support_staff_page():
-    return render_template('support_staff.html')
+    return render_template('supportstaff.html')
 
 @app.route('/administrator')
 def administrator_page():
@@ -126,8 +124,6 @@ def logout():
 
 
 # Ticket Creation / Ticket Closing
-
-
 class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)  # Ticket ID
     title = db.Column(db.String(100), nullable=False)  # Title
@@ -136,7 +132,6 @@ class Ticket(db.Model):
     created_by = db.Column(db.String(50), nullable=False)  # Request User
     assigned_to = db.Column(db.String(50), nullable=True)  # Assigned to
     created_at = db.Column(db.DateTime, default=db.func.now())  # Timestamp
-
 
 # Create Ticket Route
 @app.route('/create_ticket', methods=['GET', 'POST'])
