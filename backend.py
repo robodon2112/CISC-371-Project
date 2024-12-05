@@ -185,6 +185,18 @@ def view_ticket(ticket_id):
 
     return render_template('viewticket.html', ticket=ticket, role=session.get('role'))
 
+# Add Ticket to Table 
+@app.route('/helpdesk_tickets')
+def helpdesk_tickets():
+    if 'username' not in session:
+        flash("You must log in to view tickets.", "danger")
+        return redirect(url_for('home'))
+    
+    # Fetch tickets from the database
+    tickets = Ticket.query.all()
+    return render_template('helpdesk.html', tickets=tickets, role=session.get('role'))
+
+
 # Close Ticket Route
 
 @app.route('/close_ticket/<int:ticket_id>', methods=['POST'])
@@ -206,5 +218,4 @@ with app.app_context():
     print("Creating tables...")
     db.create_all()
     print("Tables created successfully.")
-
 

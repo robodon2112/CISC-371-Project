@@ -63,7 +63,6 @@
         </a>
     </header>
     
-
     <!-- Ticket Table -->
     <table>
         <thead>
@@ -82,12 +81,7 @@
         <tbody>
             {% for ticket in tickets %}
             <tr>
-                <!-- Ticket Number is a clickable link -->
-                <td>
-                    <a href="{{ url_for('view_ticket', ticket_id=ticket.id) }}">
-                        {{ ticket.id }}
-                    </a>
-                </td>
+                <td><a href="{{ url_for('view_ticket', ticket_id=ticket.id) }}">{{ ticket.id }}</a></td>
                 <td>{{ ticket.status }}</td>
                 <td>{{ ticket.created_at.strftime('%Y-%m-%d') }}</td>
                 <td>{{ ticket.title }}</td>
@@ -106,6 +100,4 @@
             {% endfor %}
         </tbody>
     </table>
-</body>
-
-</html>
+    
