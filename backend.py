@@ -67,7 +67,7 @@ def login():
     print(f"Login attempt with username: {username}")
 
     # Query for the user by username (case-insensitive)
-    user = user.query.filter_by(username=username).first()
+    user = User.query.filter_by(username=username).first()
 
 
     # Debugging: Check if user exists
