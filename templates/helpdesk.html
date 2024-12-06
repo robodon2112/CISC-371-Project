@@ -1,23 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<!-- Debugging Tickets -->
-{% if tickets %}
-<p>Number of tickets: {{ tickets|length }}</p>
-{% else %}
-<p>No tickets found.</p>
-{% endif %}
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Helpdesk Dashboard</title>
     <style>
+        /* General Page Styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Page Header Styles */
+        header {
+            padding: 20px;
+            background-color: #0073e6;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        header h2 {
+            margin: 5px 0 0;
+            font-size: 20px;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .header-buttons button {
+            background-color: white;
+            color: #0073e6;
+            border: 1px solid #0073e6;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .header-buttons button:hover {
+            background-color: #0073e6;
+            color: white;
+        }
+
+        /* Scrollable Table Container */
+        .table-container {
+            max-height: 600px; /* Adjust height as needed */
+            overflow-y: auto; /* Enable vertical scrolling */
+            border: 2.cap solid #ddd;
+            margin: 20px;
+        }
+
         /* General Table Styles */
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
             font-size: 18px;
             text-align: left;
         }
@@ -29,6 +74,9 @@
 
         th {
             background-color: #f4f4f4;
+            position: sticky; /* Keep headers visible on scroll */
+            top: 0;
+            z-index: 1;
         }
 
         tr:nth-child(even) {
@@ -39,21 +87,9 @@
             background-color: #f1f1f1;
         }
 
-        /* Page Header Styles */
-        header {
-            padding: 20px;
-            background-color: #0073e6;
-            color: white;
-            text-align: left;
-        }
-
-        header h1 {
-            margin: 0;
-        }
-
-        header h2 {
-            margin: 5px 0 0;
-            font-size: 20px;
+        /* Highlight "Closed" Status */
+        .closed-ticket {
+            color: red;
         }
     </style>
 </head>
@@ -61,47 +97,68 @@
 <body>
     <!-- Title -->
     <header>
-        <h1>Track-IT MasterHD</h1>
-        <h2>Help Desk Dashboard</h2>
-        <a href="{{ url_for('create_ticket') }}" style="float: right;">
-            <button>Create Ticket</button>
-        </a>
+        <div>
+            <h1>Track-IT MasterHD</h1>
+            <h2>Help Desk Dashboard</h2>
+        </div>
+        <div class="header-buttons">
+            <a href="{{ url_for('create_ticket') }}">
+                <button>Create Ticket</button>
+            </a>
+            <a href="{{ url_for('logout') }}">
+                <button>Logout</button>
+            </a>
+        </div>
     </header>
 
-    <!-- Ticket Table -->
-<table>
-    <thead>
-        <tr>
-            <th>Ticket Number</th>
-            <th>Status</th>
-            <th>Date</th>
-            <th>Title</th>
-            <th>Request User</th>
-            <th>Assigned To</th>
-            {% if role in ['Manager', 'Admin', 'Helpdesk'] %}
-            <th>Actions</th>
-            {% endif %}
-        </tr>
-    </thead>
-    <tbody>
-        {% for ticket in tickets %}
-        <tr>
-            <td><a href="{{ url_for('view_ticket', ticket_id=ticket.id) }}">{{ ticket.id }}</a></td>
-            <td>{{ ticket.status }}</td>
-            <td>{{ ticket.created_at.strftime('%Y-%m-%d') }}</td>
-            <td>{{ ticket.title }}</td>
-            <td>{{ ticket.created_by }}</td>
-            <td>{{ ticket.assigned_to or 'Unassigned' }}</td>
-            {% if role in ['Manager', 'Admin', 'Helpdesk'] %}
-            <td>
-                {% if ticket.status == 'Opened' %}
-                <form action="{{ url_for('close_ticket', ticket_id=ticket.id) }}" method="POST">
-                    <button type="submit">Close</button>
-                </form>
-                {% endif %}
-            </td>
-            {% endif %}
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    {% if tickets %}
+    <p style="margin-left: 20px;">Number of tickets: {{ tickets|length }}</p>
+    {% else %}
+    <p style="margin-left: 20px;">No tickets found.</p>
+    {% endif %}
+
+    <!-- Scrollable Table -->
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Ticket Number</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Title</th>
+                    <th>Request User</th>
+                    <th>Assigned To</th>
+                    {% if role in ['Manager', 'Admin', 'Helpdesk'] %}
+                    <th>Actions</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for ticket in tickets %}
+                <tr>
+                    <td><a href="{{ url_for('view_ticket', ticket_id=ticket.id) }}">{{ ticket.id }}</a></td>
+                    <td class="{% if ticket.status == 'Closed' %}closed-ticket{% endif %}">
+                        {{ ticket.status }}
+                    </td>
+                    <td>{{ ticket.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ ticket.title }}</td>
+                    <td>{{ ticket.created_by }}</td>
+                    <td>{{ ticket.assigned_to or 'Unassigned' }}</td>
+                    {% if role in ['Manager', 'Admin', 'Helpdesk'] %}
+                    <td>
+                        {% if ticket.status == 'Opened' %}
+                        <form action="{{ url_for('close_ticket', ticket_id=ticket.id) }}" method="POST">
+                            <button type="submit">Close</button>
+                        </form>
+                        {% else %}
+                        Closed
+                        {% endif %}
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

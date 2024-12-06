@@ -1,24 +1,114 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Ticket</title>
+    <style>
+        /* General Page Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: white;
+            width: 80%;
+            max-width: 600px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #0073e6;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 16px;
+            color: #333;
+            margin: 10px 0;
+        }
+
+        strong {
+            color: #555;
+        }
+
+        .ticket-info {
+            margin: 15px 0;
+            text-align: left;
+        }
+
+        .ticket-info p {
+            margin: 5px 0;
+        }
+
+        button {
+            background-color: #0073e6;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #005bb5;
+        }
+
+        .back-link {
+            display: block;
+            margin-top: 20px;
+            color: #0073e6;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
+
 <body>
-    <h1>Ticket Details</h1>
-    <p><strong>Ticket Number:</strong> {{ ticket.id }}</p>
-    <p><strong>Status:</strong> {{ ticket.status }}</p>
-    <p><strong>Date Created:</strong> {{ ticket.created_at.strftime('%Y-%m-%d') }}</p>
-    <p><strong>Title:</strong> {{ ticket.title }}</p>
-    <p><strong>Description:</strong> {{ ticket.description }}</p>
-    <p><strong>Created By:</strong> {{ ticket.created_by }}</p>
-    <p><strong>Assigned To:</strong> {{ ticket.assigned_to or 'Unassigned' }}</p>
+    <div class="container">
+        <h1>Ticket Details</h1>
+        <div class="ticket-info">
+            <p><strong>Ticket Number:</strong> {{ ticket.id }}</p>
+            <p><strong>Status:</strong> 
+                {% if ticket.status == 'Closed' %}
+                <span style="color: red;">{{ ticket.status }}</span>
+                {% else %}
+                {{ ticket.status }}
+                {% endif %}
+            </p>
+            <p><strong>Date Created:</strong> {{ ticket.created_at.strftime('%Y-%m-%d') }}</p>
+            <p><strong>Title:</strong> {{ ticket.title }}</p>
+            <p><strong>Description:</strong> {{ ticket.description }}</p>
+            <p><strong>Created By:</strong> {{ ticket.created_by }}</p>
+            <p><strong>Assigned To:</strong> {{ ticket.assigned_to or 'Unassigned' }}</p>
+        </div>
 
-    {% if role in ['Manager', 'Admin', 'Helpdesk'] and ticket.status == 'Opened' %}
-    <form method="POST" action="{{ url_for('view_ticket', ticket_id=ticket.id) }}">
-        <button type="submit">Close Ticket</button>
-    </form>
-    {% endif %}
+        {% if role in ['Manager', 'Admin', 'Helpdesk'] and ticket.status == 'Opened' %}
+        <form method="POST" action="{{ url_for('view_ticket', ticket_id=ticket.id) }}">
+            <button type="submit">Close Ticket</button>
+        </form>
+        {% endif %}
 
-    <a href="{{ url_for('home') }}">Back to Home</a>
+        <a href="{{ url_for('helpdesk_page') }}" class="back-link">Back to Dashboard</a>
+    </div>
 </body>
+
 </html>

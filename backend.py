@@ -1,3 +1,5 @@
+""" URL is https://cisc-371-project.onrender.com  """
+
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -15,7 +17,7 @@ db = SQLAlchemy(app)
 with app.app_context():
     db.create_all()
 
-# User model that maps to POSTGRESQL 
+# User model that maps user to POSTGRESQL 
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -34,16 +36,13 @@ def signup():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        role = request.form['role']  # Capture the role selected in the form
-
-        # Hash the password before storing it
+        role = request.form['role']  # Capture the role selected in form
+        # Hash the password 
         hashed_password = generate_password_hash(password)
-
         # Create a new user instance with role
         new_user = User(username=username, password=hashed_password, role=role)
-
         try:
-            # Add and commit the new user to the database
+            # Add and commit the new user to database
             db.session.add(new_user)
             db.session.commit()
             flash("Sign-up successful! Please log in.")
@@ -60,20 +59,15 @@ def signup():
 def login():
     username = request.form['username']
     password = request.form['password']
-
-    # Debugging: Print input values
+    # Debugging
     print(f"Login attempt with username: {username}")
-
     # Query for the user by username (case-insensitive)
     user = User.query.filter_by(username=username).first()
-
-
-    # Debugging: Check if user exists
+    # Debugging:
     if user:
         print(f"User found: {user.username}, Role: {user.role}")
     else:
         print("No user found with that username.")
-
     # Check if user exists and password matches
     if user and check_password_hash(user.password, password):
         session['username'] = username  # Set session variable
@@ -98,32 +92,53 @@ def login():
         print("Login failed: Invalid username or password")
         return redirect(url_for('home'))
 
-# Protected route for the dashboard
+# Protected route for respective dashboard
 @app.route('/helpdesk')
 def helpdesk_page():
-    return render_template('helpdesk.html')
+    if 'username' not in session:
+        flash("You must log in to view tickets.", "danger")
+        return redirect(url_for('home')) 
+    tickets = Ticket.query.order_by(Ticket.created_at.asc()).all()
+    print(f"Tickets retrieved: {tickets}")
+    return render_template('helpdesk.html', tickets=tickets, role=session.get('role'))
 
 @app.route('/support_staff')
 def support_staff_page():
-    return render_template('supportstaff.html')
+    if 'username' not in session:
+        flash("You must log in to view tickets.", "danger")
+        return redirect(url_for('home'))
+    tickets = Ticket.query.order_by(Ticket.created_at.asc()).all()
+    print(f"Tickets retrieved: {tickets}")
+    return render_template('supportstaff.html', tickets=tickets, role=session.get('role'))
 
 @app.route('/administrator')
 def administrator_page():
-    return render_template('administrator.html')
+    if 'username' not in session:
+        flash("You must log in to view tickets.", "danger")
+        return redirect(url_for('home'))
+    tickets = Ticket.query.order_by(Ticket.created_at.asc()).all()
+    print(f"Tickets retrieved: {tickets}")
+    return render_template('administrator.html', tickets=tickets, role=session.get('role'))
 
 @app.route('/manager')
 def manager_page():
-    return render_template('manager.html')
+    if 'username' not in session:
+        flash("You must log in to view tickets.", "danger")
+        return redirect(url_for('home'))
+    tickets = Ticket.query.order_by(Ticket.created_at.asc()).all()
+    print(f"Tickets retrieved: {tickets}")
+    return render_template('manager.html', tickets=tickets, role=session.get('role'))
 
-# Route to handle user logout
+# Route to handle logout
 @app.route('/logout')
 def logout():
     session.pop('username', None)  # Clear the session
     flash("You have been logged out.")
     return redirect(url_for('home'))
 
-
 # Ticket Creation / Ticket Closing
+
+# User model that maps tickets to POSTGRESQL
 class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)  # Ticket ID
     title = db.Column(db.String(100), nullable=False)  # Title
@@ -139,12 +154,10 @@ def create_ticket():
     if 'username' not in session:
         flash("You must log in to create a ticket.", "danger")
         return redirect(url_for('home'))
-
     if request.method == 'POST':
         title = request.form['title']
         description = request.form['description']  # Capture ticket details
         created_by = session['username']  # Logged-in user
-
         new_ticket = Ticket(
             title=title,
             description=description,
@@ -158,11 +171,11 @@ def create_ticket():
             db.session.rollback()
             flash(f"Failed to create ticket: {e}", "danger")
 
-        # Redirect back to user's homepage
+        # Redirect back to user's respective homepage
         role = session.get('role')
         if role == 'Helpdesk':
             return redirect(url_for('helpdesk_page'))
-        elif role == 'SupportStaff':
+        elif role == 'Support Staff':
             return redirect(url_for('support_staff_page'))
         elif role == 'Administrator':
             return redirect(url_for('administrator_page'))
@@ -178,14 +191,13 @@ def view_ticket(ticket_id):
     if 'username' not in session:
         flash("You must log in to view tickets.", "danger")
         return redirect(url_for('home'))
-
     ticket = Ticket.query.get(ticket_id)
     if not ticket:
         flash("Ticket not found.", "danger")
         return redirect(url_for('home'))
 
     # Handle ticket closure
-    if request.method == 'POST' and session.get('role') in ['Manager', 'Admin', 'Helpdesk']:
+    if request.method == 'POST' and session.get('role') in ['Manager', 'Administrator', 'Helpdesk']:
         ticket.status = "Closed"
         db.session.commit()
         flash(f"Ticket {ticket.id} closed successfully!", "success")
@@ -193,37 +205,42 @@ def view_ticket(ticket_id):
 
     return render_template('viewticket.html', ticket=ticket, role=session.get('role'))
 
-# Add Ticket to Table 
-@app.route('/helpdesk_tickets')
-def helpdesk_tickets():
-    if 'username' not in session:
-        flash("You must log in to view tickets.", "danger")
-        return redirect(url_for('home'))
-    
-    # Fetch tickets from the database
-    tickets = Ticket.query.all()
-    return render_template('helpdesk.html', tickets=tickets, role=session.get('role'))
-
-
 # Close Ticket Route
-
 @app.route('/close_ticket/<int:ticket_id>', methods=['POST'])
 def close_ticket(ticket_id):
     if 'username' not in session or session.get('role') not in ['Manager', 'Admin', 'Helpdesk']:
-        flash("You do not have permission to close tickets.")
-        return redirect(url_for('view_tickets'))
-
+        flash("You do not have permission to close tickets.", "danger")
+        return redirect(url_for('home'))
     ticket = Ticket.query.get(ticket_id)
     if ticket:
-        ticket.status = "Closed"
-        db.session.commit()
-        flash("Ticket closed successfully!")
+        try:
+            ticket.status = "Closed"  # Update the status
+            db.session.commit()  # Save the change
+            flash(f"Ticket {ticket.id} closed successfully!", "success")
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Failed to close ticket: {e}", "danger")
     else:
-        flash("Ticket not found.")
-    return redirect(url_for('view_tickets'))
+        flash("Ticket not found.", "danger")
 
+    # Role-based redirection
+    role = session.get('role')
+    if role == 'Helpdesk':
+        return redirect(url_for('helpdesk_page'))
+    elif role == 'Support Staff':
+        return redirect(url_for('support_staff_page'))
+    elif role == 'Administrator':
+        return redirect(url_for('administrator_page'))
+    elif role == 'Manager':
+        return redirect(url_for('manager_page'))
+
+    # Fallback in case role is undefined
+    return redirect(url_for('home'))
+
+"""
+# debugging to check tables are being created in database
 with app.app_context():
     print("Creating tables...")
     db.create_all()
     print("Tables created successfully.")
-
+"""
