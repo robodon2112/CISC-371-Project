@@ -59,39 +59,51 @@
             margin: 20px;
         }
 
-        /* General Table Styles */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 18px;
-            text-align: left;
-        }
+        <style>
+    /* General Table Styles */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        font-size: 18px;
+        text-align: left;
+    }
 
-        th, td {
-            padding: 12px;
-            border: 1px solid #ddd;
-        }
+    th, td {
+        padding: 12px;
+        border: 1px solid #ddd;
+    }
 
-        th {
-            background-color: #f4f4f4;
-            position: sticky; /* Keep headers visible on scroll */
-            top: 0;
-            z-index: 1;
-        }
+    th {
+        background-color: #f4f4f4;
+    }
 
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
 
-        tr:hover {
-            background-color: #f1f1f1;
-        }
+    tr:hover {
+        background-color: #f1f1f1;
+    }
 
-        /* Highlight "Closed" Status */
-        .closed-ticket {
-            color: red;
-        }
-    </style>
+    /* Assigned Status */
+    .assigned-status.assigned {
+        background-color: #28a745; /* Green */
+        color: white;
+        font-weight: bold;
+        text-align: center;
+        border-radius: 4px;
+    }
+
+    .assigned-status.unassigned {
+        background-color: #dc3545; /* Red */
+        color: white;
+        font-weight: bold;
+        text-align: center;
+        border-radius: 4px;
+    }
+</style>
+
 </head>
 
 <body>
@@ -143,22 +155,22 @@
                     <td>{{ ticket.created_at.strftime('%Y-%m-%d') }}</td>
                     <td>{{ ticket.title }}</td>
                     <td>{{ ticket.created_by }}</td>
-                    <td>{{ ticket.assigned_to or 'Unassigned' }}</td>
-                    {% if role in ['Manager', 'Admin', 'Helpdesk'] %}
-                    <td>
-                        {% if ticket.status == 'Opened' %}
-                        <form action="{{ url_for('close_ticket', ticket_id=ticket.id) }}" method="POST">
-                            <button type="submit">Close</button>
-                        </form>
-                        {% else %}
-                        Closed
-                        {% endif %}
-                    </td>
-                    {% endif %}
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</body>
-</html>
+
+            <!-- Check if 'Assigned To' is Unassigned or Assigned -->
+            <td class="assigned-status {% if ticket.assigned_to %}assigned{% else %}unassigned{% endif %}">
+                {{ ticket.assigned_to or 'Unassigned' }}
+            </td>
+
+            {% if role in ['Manager', 'Administrator', 'Helpdesk'] %}
+            <td>
+                {% if ticket.status == 'Opened' %}
+                <form action="{{ url_for('close_ticket', ticket_id=ticket.id) }}" method="POST">
+                    <button type="submit">Close</button>
+                </form>
+                {% endif %}
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

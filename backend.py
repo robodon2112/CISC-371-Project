@@ -205,6 +205,36 @@ def view_ticket(ticket_id):
 
     return render_template('viewticket.html', ticket=ticket, role=session.get('role'))
 
+# Assign ticket route 
+@app.route('/assign_ticket/<int:ticket_id>', methods=['POST'])
+def assign_ticket(ticket_id):
+    if 'username' not in session or session.get('role') not in ['Manager', 'Admin', 'Helpdesk']:
+        flash("You do not have permission to assign tickets.")
+        return redirect(url_for('helpdesk_page'))
+
+    assigned_user = request.form.get('assigned_user')  # Get assigned user from the form
+    ticket = Ticket.query.get(ticket_id)
+
+    if ticket:
+        ticket.assigned_to = assigned_user
+        db.session.commit()
+        flash(f"Ticket {ticket.id} assigned to {assigned_user} successfully!")
+    else:
+        flash("Ticket not found.")
+
+    role = session.get('role')
+    if role == 'Helpdesk':
+        return redirect(url_for('helpdesk_page'))
+    elif role == 'SupportStaff':
+        return redirect(url_for('support_staff_page'))
+    elif role == 'Administrator':
+        return redirect(url_for('administrator_page'))
+    elif role == 'Manager':
+        return redirect(url_for('manager_page'))
+
+    return redirect(url_for('home'))
+
+
 # Close Ticket Route
 @app.route('/close_ticket/<int:ticket_id>', methods=['POST'])
 def close_ticket(ticket_id):
