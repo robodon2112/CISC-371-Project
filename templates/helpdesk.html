@@ -1,4 +1,4 @@
-        <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -53,8 +53,8 @@
 
         /* Scrollable Table Container */
         .table-container {
-            max-height: 600px; /* Adjust height as needed */
-            overflow-y: auto; /* Enable vertical scrolling */
+            max-height: 600px; 
+            overflow-y: auto; 
             border: 2px solid #ddd;
             margin: 20px;
         }
@@ -63,7 +63,6 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
             font-size: 18px;
             text-align: left;
         }
@@ -96,14 +95,6 @@
 
         .assigned-status.unassigned {
             background-color: #dc3545; /* Red */
-            color: white;
-            font-weight: bold;
-            text-align: center;
-            border-radius: 4px;
-        }
-
-        .closed-ticket {
-            background-color: #6c757d; /* Gray */
             color: white;
             font-weight: bold;
             text-align: center;
@@ -161,24 +152,24 @@
                     <td>{{ ticket.created_at.strftime('%Y-%m-%d') }}</td>
                     <td>{{ ticket.title }}</td>
                     <td>{{ ticket.created_by }}</td>
+
                     <td class="assigned-status {% if ticket.assigned_to %}assigned{% else %}unassigned{% endif %}">
-                        {{ ticket.assigned_to or 'Unassigned' }}
-                    </td>
-                    {% if role in ['Manager', 'Administrator', 'Helpdesk'] %}
-                    <td>
-                        {% if ticket.status == 'Opened' %}
-                        <form action="{{ url_for('close_ticket', ticket_id=ticket.id) }}" method="POST">
-                            <button type="submit">Close</button>
+                        {% if not ticket.assigned_to and role == 'Helpdesk' %}
+                        <form action="{{ url_for('assign_ticket', ticket_id=ticket.id) }}" method="POST" style="display: inline;">
+                            <button type="submit" style="background: none; border: none; color: #dc3545; font-weight: bold; cursor: pointer;">
+                                Unassigned
+                            </button>
                         </form>
+                        {% else %}
+                            {{ ticket.assigned_to or 'Unassigned' }}
                         {% endif %}
                     </td>
-                    {% endif %}
+
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+
 </body>
 </html>
-
-      

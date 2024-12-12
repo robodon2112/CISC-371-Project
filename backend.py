@@ -212,7 +212,7 @@ def assign_ticket(ticket_id):
         flash("You do not have permission to assign tickets.")
         return redirect(url_for('helpdesk_page'))
 
-    assigned_user = request.form.get('assigned_user')  # Get assigned user from the form
+    assigned_user = request.form.get('username')  # Get assigned user from the form
     ticket = Ticket.query.get(ticket_id)
 
     if ticket:
@@ -233,7 +233,6 @@ def assign_ticket(ticket_id):
         return redirect(url_for('manager_page'))
 
     return redirect(url_for('home'))
-
 
 # Close Ticket Route
 @app.route('/close_ticket/<int:ticket_id>', methods=['POST'])
